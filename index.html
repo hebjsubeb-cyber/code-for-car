@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ACEBOT QD0001 Smart Car Project</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --panel2:#0f1730;
+      --text:#e8ecff;
+      --muted:#b8c0ff;
+      --accent:#6ea8ff;
+      --accent2:#7cf0c7;
+      --danger:#ff6e87;
+      --border:rgba(255,255,255,.12);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --radius2:22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:radial-gradient(1200px 800px at 30% -10%, rgba(110,168,255,.25), transparent 60%),
+                 radial-gradient(900px 700px at 100% 0%, rgba(124,240,199,.18), transparent 60%),
+                 linear-gradient(180deg, #070a14, var(--bg));
+      color:var(--text);
+    }
+
+    a{color:var(--accent)}
+    .wrap{max-width:1100px; margin:0 auto; padding:24px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:18px 18px;
+      border:1px solid var(--border);
+      border-radius:var(--radius2);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow:var(--shadow);
+      position:sticky; top:12px; z-index:10; backdrop-filter: blur(10px);
+    }
+    header .title{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    header h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    header p{
+      margin:0; color:var(--muted); font-size:13px; line-height:1.2;
+    }
+    nav{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    nav a{
+      text-decoration:none;
+      font-size:13px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+    }
+    nav a:hover{border-color:rgba(110,168,255,.6)}
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 940px){
+      .grid{grid-template-columns:1fr}
+      header{position:relative; top:0}
+    }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:var(--radius2);
+      background:linear-gradient(180deg, rgba(18,26,51,.82), rgba(15,23,48,.78));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .card .hd h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.25px;
+    }
+    .card .bd{padding:16px}
+    .muted{color:var(--muted)}
+    .pill{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    /* Assembly */
+    .assembly-layout{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 940px){
+      .assembly-layout{grid-template-columns:1fr}
+    }
+    .stage{
+      border:1px solid var(--border);
+      border-radius:var(--radius2);
+      overflow:hidden;
+      background:rgba(0,0,0,.2);
+    }
+    .stage .imgwrap{
+      aspect-ratio: 16/10;
+      background:rgba(0,0,0,.35);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .stage img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:rgba(0,0,0,.25);
+    }
+    .stage .caption{
+      padding:12px 12px 14px 12px;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .caption .row{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .caption .step{
+      font-weight:700;
+      font-size:13px;
+    }
+    .caption .desc{
+      margin:0; color:var(--muted); font-size:13px; line-height:1.5;
+    }
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none; border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn:hover{border-color:rgba(110,168,255,.7)}
+    .btn.primary{border-color:rgba(110,168,255,.75); background:rgba(110,168,255,.10)}
+    .btn.danger{border-color:rgba(255,110,135,.6); background:rgba(255,110,135,.10)}
+    .btn:active{transform:translateY(1px)}
+    .thumbs{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+    .thumb{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.25);
+      cursor:pointer;
+      transition: transform .08s ease, border-color .12s ease;
+    }
+    .thumb:hover{border-color:rgba(110,168,255,.6)}
+    .thumb:active{transform:translateY(1px)}
+    .thumb .timg{
+      aspect-ratio: 4/3;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35);
+    }
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+    .thumb .tcap{
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex; justify-content:space-between; gap:8px;
+      font-family:var(--mono);
+    }
+    .thumb.active{outline:2px solid rgba(110,168,255,.75); border-color:transparent}
+
+    /* Video */
+    video{
+      width:100%;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.25);
+    }
+
+    /* Issues */
+    .issues{
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .issue{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 12px;
+      background:rgba(255,255,255,.03);
+    }
+    .issue h3{margin:0 0 8px 0; font-size:13px}
+    .issue p{margin:0; color:var(--muted); font-size:13px; line-height:1.55}
+
+    /* Controller */
+    .ctrl-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .ctrl-top{
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    }
+    .field{
+      display:flex; flex-direction:column; gap:6px;
+      min-width: 220px;
+      flex:1;
+    }
+    label{font-size:12px; color:var(--muted)}
+    input, select{
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    input:focus, select:focus{border-color:rgba(110,168,255,.8)}
+    .pad{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    .pad .spacer{visibility:hidden}
+    .pad button{
+      height:64px;
+      border-radius:18px;
+      font-size:14px;
+      font-weight:700;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action: manipulation;
+    }
+    .pad button:hover{border-color:rgba(110,168,255,.65)}
+    .pad button:active{transform:translateY(1px)}
+    .pad .stop{border-color:rgba(255,110,135,.6); background:rgba(255,110,135,.10)}
+    .log{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:rgba(0,0,0,.22);
+      padding:10px 10px;
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      height:180px;
+      overflow:auto;
+      line-height:1.5;
+      white-space:pre-wrap;
+    }
+    .krow{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    footer{
+      margin:18px 0 40px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>ACEBOT QD0001 Smart Car Kit — Project Demo</h1>
+        <p class="muted">Assembly • ACEcode programming • Web control • Issues & solutions</p>
+      </div>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#assembly">Assembly</a>
+        <a href="#control">Web Control</a>
+        <a href="#demo">Video Demo</a>
+        <a href="#issues">Issues</a>
+      </nav>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT MAIN -->
+      <main class="card" id="overview">
+        <div class="hd">
+          <h2>Project Overview</h2>
+          <span class="pill">ACEBOT QD0001</span>
+        </div>
+        <div class="bd">
+          <p style="margin-top:0; color:var(--muted); line-height:1.6">
+            This website demonstrates our project using the <b>ACEBOT QD0001 smart car kit</b>:
+          </p>
+          <ol style="margin:0; color:var(--muted); line-height:1.7">
+            <li>Assemble the car from scratch.</li>
+            <li>Program instructions using <b>ACEcode</b>, upload to the controller, and control the car from a web page.</li>
+            <li>Summarize issues we discovered and our solutions.</li>
+          </ol>
+
+          <div style="height:14px"></div>
+
+          <div class="assembly-layout" id="assembly">
+            <section class="stage" aria-label="Assembly stage">
+              <div class="imgwrap">
+                <img id="stageImg" src="pic/pic1.jpg" alt="Assembly step image" />
+              </div>
+              <div class="caption">
+                <div class="row">
+                  <div>
+                    <div class="step" id="stageTitle">Step 1</div>
+                    <div class="pill" id="stageFile">pic/pic1.jpg</div>
+                  </div>
+                  <div class="controls">
+                    <button class="btn" id="prevBtn">◀ Prev</button>
+                    <button class="btn primary" id="nextBtn">Next ▶</button>
+                  </div>
+                </div>
+                <p class="desc" id="stageDesc"></p>
+              </div>
+            </section>
+
+            <aside>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px">
+                <div style="font-weight:700; font-size:13px">Assembly Photos</div>
+                <span class="pill" id="counterPill">1 / 13</span>
+              </div>
+              <div class="thumbs" id="thumbs"></div>
+              <div style="margin-top:10px; color:var(--muted); font-size:12px; line-height:1.5">
+                Tip: click any thumbnail to jump to that step.
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="card" id="control">
+        <div class="hd">
+          <h2>Web Control Panel</h2>
+          <span class="pill" id="modePill">Mode: Demo</span>
+        </div>
+        <div class="bd">
+          <div class="ctrl-grid">
+            <div class="ctrl-top">
+              <div class="field">
+                <label for="mode">Send Method</label>
+                <select id="mode">
+                  <option value="demo">Demo (no backend)</option>
+                  <option value="http">HTTP (POST /command)</option>
+                  <option value="ws">WebSocket (ws://...)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="endpoint">Endpoint (HTTP or WS URL)</label>
+                <input id="endpoint" type="text" placeholder="http://192.168.4.1/command  or  ws://192.168.4.1:81" />
+              </div>
+              <div style="display:flex; gap:10px; align-items:flex-end">
+                <button class="btn primary" id="connectBtn">Connect</button>
+                <button class="btn danger" id="disconnectBtn">Disconnect</button>
+              </div>
+            </div>
+
+            <div class="pad" aria-label="Directional controls">
+              <div class="spacer"></div>
+              <button data-cmd="forward" id="btnForward">▲<div style="font-size:11px; font-weight:600; opacity:.8">Forward</div></button>
+              <div class="spacer"></div>
+
+              <button data-cmd="left" id="btnLeft">◀<div style="font-size:11px; font-weight:600; opacity:.8">Left</div></button>
+              <button data-cmd="stop" class="stop" id="btnStop">■<div style="font-size:11px; font-weight:600; opacity:.8">Stop</div></button>
+              <button data-cmd="right" id="btnRight">▶<div style="font-size:11px; font-weight:600; opacity:.8">Right</div></button>
+
+              <div class="spacer"></div>
+              <button data-cmd="backward" id="btnBackward">▼<div style="font-size:11px; font-weight:600; opacity:.8">Back</div></button>
+              <div class="spacer"></div>
+            </div>
+
+            <div class="krow">
+              Keyboard: <span class="pill">W</span><span class="pill">A</span><span class="pill">S</span><span class="pill">D</span> to drive,
+              <span class="pill">Space</span> to stop
+            </div>
+
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px">
+                <div style="font-weight:700; font-size:13px">Command Log</div>
+                <button class="btn" id="clearLogBtn">Clear</button>
+              </div>
+              <div class="log" id="log"></div>
+              <div style="margin-top:10px; color:var(--muted); font-size:12px; line-height:1.5">
+                If you select <b>HTTP</b>, this site will send:
+                <span class="pill">POST /command</span>
+                with JSON like <span class="pill">{ "cmd": "forward" }</span>.
+                <br/>
+                If you select <b>WebSocket</b>, it will send a JSON message with the same format.
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- VIDEO -->
+      <section class="card" id="demo" style="grid-column: 1 / -1">
+        <div class="hd">
+          <h2>Video Demo</h2>
+          <span class="pill">video/video1.MOV</span>
+        </div>
+        <div class="bd">
+          <video controls playsinline preload="metadata">
+            <source src="video/video1.MOV" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <p class="muted" style="margin:12px 0 0; line-height:1.6">
+            Description: The vehicle can move forward and backward and adjust its direction to the left or right using
+            touch screen / mouse commands.
+          </p>
+        </div>
+      </section>
+
+      <!-- ISSUES -->
+      <section class="card" id="issues" style="grid-column: 1 / -1">
+        <div class="hd">
+          <h2>Issues Found & Solutions</h2>
+          <span class="pill">Troubleshooting</span>
+        </div>
+        <div class="bd">
+          <div class="issues">
+            <div class="issue">
+              <h3>1) Battery had a poor connection</h3>
+              <p>
+                <b>Issue:</b> The battery connection was unstable. <br/>
+                <b>Solution:</b> We used a small piece of steel to push the positive terminal of the power supply against
+                the contact point.
+              </p>
+            </div>
+            <div class="issue">
+              <h3>2) Car turns, but doesn’t move smoothly in a curve</h3>
+              <p>
+                <b>Issue:</b> The car can turn left/right, but it cannot move smoothly along a curved path like a normal automobile. <br/>
+                <b>Notes:</b> This often happens when turning is implemented as “stop one side / run the other side” or with
+                step-like steering rather than differential speed blending.
+              </p>
+            </div>
+            <div class="issue">
+              <h3>3) One unit’s behavior doesn’t affect other units</h3>
+              <p>
+                <b>Issue:</b> Although all cables are connected to the center control unit, one particular unit’s work
+                doesn’t affect other units. <br/>
+                <b>Notes:</b> This could be a logic / mapping / port assignment issue in code, or an electrical/connector mismatch.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Built with HTML + JavaScript for ACEBOT QD0001 project demonstration.
+    </footer>
+  </div>
+
+  <script>
+    /***********************
+     * 1) ASSEMBLY CONTENT *
+     ***********************/
+    // NOTE: You wrote "pics2.jpg" and "pic9.pgj" in the description.
+    // Here we assume the actual filenames are pic2.jpg and pic9.jpg (common case).
+    // If your real names differ, update the "file" fields below.
+    const assemblySteps = [
+      {
+        file: "pic/pic1.jpg",
+        title: "Step 1",
+        desc: "First off, all the protection stickers on 2 decks have to be teared down to make full exposure for cables and all electronics."
+      },
+      {
+        file: "pic/pic2.jpg",
+        title: "Step 2",
+        desc: "The main sensor for detecting has to sit on the base, so the base is assembled with the wire that connects all other units."
+      },
+      {
+        file: "pic/pic3.jpg",
+        title: "Step 3",
+        desc: "The lower deck with pivot sticks were installed to give space for connecting upper and lower decks."
+      },
+      {
+        file: "pic/pic4.jpg",
+        title: "Step 4",
+        desc: "Moving down to the lower deck, 4 wheel units were installed properly. Remember the order: clockwise. Make sure there will be enough suspension arm space to assemble 4 wheels."
+      },
+      {
+        file: "pic/pic5.jpg",
+        title: "Step 5",
+        desc: "After fixing all wheel units, clear up the cables. Pull the wheel cables out (not touching the lower deck), and pull the main sensor unit cable through the middle circle to connect upper units later."
+      },
+      {
+        file: "pic/pic6.jpg",
+        title: "Step 6",
+        desc: "Took the upper deck and the center unit (that connects all categories of units) out. Be ready to install the center unit."
+      },
+      {
+        file: "pic/pic7.jpg",
+        title: "Step 7",
+        desc: "Front light units were installed at the front of the upper deck."
+      },
+      {
+        file: "pic/pic8.jpg",
+        title: "Step 8",
+        desc: "The front sensor was installed firmly with the base as a bumper zone."
+      },
+      {
+        file: "pic/pic9.jpg",
+        title: "Step 9",
+        desc: "The center unit cable was connected."
+      },
+      {
+        file: "pic/pic10.jpg",
+        title: "Step 10",
+        desc: "Connect the upper and lower deck previously installed, and the battery box was put at the rear with the line connected to the center unit."
+      },
+      {
+        file: "pic/pic11.jpg",
+        title: "Step 11",
+        desc: "Put all 4 wheels on, connected to the control arm."
+      },
+      {
+        file: "pic/pic12.jpg",
+        title: "Step 12",
+        desc: "Pull all the cables into the center control unit, plug all cables in order."
+      },
+      {
+        file: "pic/pic13.jpg",
+        title: "Step 13",
+        desc: "Put the battery on to light up the car."
+      }
+    ];
+
+    let currentStep = 0;
+
+    const stageImg   = document.getElementById("stageImg");
+    const stageTitle = document.getElementById("stageTitle");
+    const stageFile  = document.getElementById("stageFile");
+    const stageDesc  = document.getElementById("stageDesc");
+    const counterPill= document.getElementById("counterPill");
+    const thumbsWrap = document.getElementById("thumbs");
+
+    function renderThumbs(){
+      thumbsWrap.innerHTML = "";
+      assemblySteps.forEach((s, idx) => {
+        const el = document.createElement("div");
+        el.className = "thumb" + (idx === currentStep ? " active" : "");
+        el.innerHTML = `
+          <div class="timg"><img src="${s.file}" alt="${s.title} thumbnail" loading="lazy"></div>
+          <div class="tcap"><span>${String(idx+1).padStart(2,"0")}</span><span>pic${idx+1}</span></div>
+        `;
+        el.addEventListener("click", () => setStep(idx));
+        thumbsWrap.appendChild(el);
+      });
+    }
+
+    function setStep(idx){
+      currentStep = Math.max(0, Math.min(assemblySteps.length - 1, idx));
+      const s = assemblySteps[currentStep];
+      stageImg.src = s.file;
+      stageTitle.textContent = s.title;
+      stageFile.textContent = s.file;
+      stageDesc.textContent = s.desc;
+      counterPill.textContent = `${currentStep + 1} / ${assemblySteps.length}`;
+      renderThumbs();
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => setStep(currentStep - 1));
+    document.getElementById("nextBtn").addEventListener("click", () => setStep(currentStep + 1));
+
+    // Init assembly view
+    setStep(0);
+
+    /**************************
+     * 2) WEB CONTROL (DEMO)  *
+     **************************/
+    const logEl = document.getElementById("log");
+    const modeEl = document.getElementById("mode");
+    const endpointEl = document.getElementById("endpoint");
+    const modePill = document.getElementById("modePill");
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const clearLogBtn = document.getElementById("clearLogBtn");
+
+    let ws = null;
+    let isConnected = false;
+
+    function nowTime(){
+      const d = new Date();
+      return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    }
+
+    function log(msg){
+      logEl.textContent += `[${nowTime()}] ${msg}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateModePill(){
+      const m = modeEl.value;
+      const label = m === "demo" ? "Demo" : (m === "http" ? "HTTP" : "WebSocket");
+      modePill.textContent = `Mode: ${label}${isConnected ? " (connected)" : ""}`;
+    }
+
+    modeEl.addEventListener("change", () => {
+      // Switching mode disconnects any existing WS connection
+      if (ws) {
+        try { ws.close(); } catch {}
+        ws = null;
+      }
+      isConnected = false;
+      updateModePill();
+      log(`Switched mode to ${modeEl.value.toUpperCase()}.`);
+    });
+
+    clearLogBtn.addEventListener("click", () => {
+      logEl.textContent = "";
+      log("Log cleared.");
+    });
+
+    connectBtn.addEventListener("click", async () => {
+      const mode = modeEl.value;
+      const endpoint = endpointEl.value.trim();
+
+      if (mode === "demo") {
+        isConnected = true;
+        updateModePill();
+        log("Demo mode: no real connection required.");
+        return;
+      }
+
+      if (!endpoint) {
+        log("Please enter an endpoint first.");
+        return;
+      }
+
+      if (mode === "http") {
+        // For HTTP we just test by sending a ping command (optional)
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({cmd:"ping"})
+          });
+          isConnected = res.ok;
+          updateModePill();
+          log(isConnected ? "HTTP endpoint reachable (ping sent)." : `HTTP endpoint returned status ${res.status}.`);
+        } catch (e) {
+          isConnected = false;
+          updateModePill();
+          log("HTTP connect failed: " + e.message);
+        }
+        return;
+      }
+
+      if (mode === "ws") {
+        try {
+          ws = new WebSocket(endpoint);
+          ws.onopen = () => {
+            isConnected = true;
+            updateModePill();
+            log("WebSocket connected.");
+          };
+          ws.onclose = () => {
+            isConnected = false;
+            updateModePill();
+            log("WebSocket disconnected.");
+          };
+          ws.onerror = () => {
+            log("WebSocket error.");
+          };
+          ws.onmessage = (ev) => {
+            log("WS message: " + String(ev.data));
+          };
+        } catch (e) {
+          isConnected = false;
+          updateModePill();
+          log("WS connect failed: " + e.message);
+        }
+      }
+    });
+
+    disconnectBtn.addEventListener("click", () => {
+      isConnected = false;
+      updateModePill();
+      if (ws) {
+        try { ws.close(); } catch {}
+        ws = null;
+      }
+      log("Disconnected.");
+    });
+
+    async function sendCommand(cmd){
+      const mode = modeEl.value;
+      const endpoint = endpointEl.value.trim();
+
+      // Always log locally
+      log(`CMD -> ${cmd}`);
+
+      if (mode === "demo") return;
+
+      if (!endpoint) {
+        log("No endpoint set. (Command not sent)");
+        return;
+      }
+
+      if (mode === "http") {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({cmd})
+          });
+          log(res.ok ? "HTTP sent OK." : `HTTP failed: status ${res.status}`);
+        } catch (e) {
+          log("HTTP send error: " + e.message);
+        }
+        return;
+      }
+
+      if (mode === "ws") {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          log("WS not connected. (Command not sent)");
+          return;
+        }
+        try {
+          ws.send(JSON.stringify({cmd}));
+          // no extra log needed; already logged
+        } catch (e) {
+          log("WS send error: " + e.message);
+        }
+      }
+    }
+
+    function attachPressAndHold(button, cmd){
+      // On press/touch: send the cmd.
+      // On release: send stop (except if the cmd itself is stop).
+      const sendStart = (ev) => {
+        ev.preventDefault();
+        sendCommand(cmd);
+      };
+      const sendEnd = (ev) => {
+        ev.preventDefault();
+        if (cmd !== "stop") sendCommand("stop");
+      };
+
+      button.addEventListener("pointerdown", sendStart);
+      button.addEventListener("pointerup", sendEnd);
+      button.addEventListener("pointercancel", sendEnd);
+      button.addEventListener("pointerleave", (ev) => {
+        // If user drags finger/mouse away while pressing
+        if (ev.buttons) sendEnd(ev);
+      });
+    }
+
+    // Wire buttons
+    attachPressAndHold(document.getElementById("btnForward"), "forward");
+    attachPressAndHold(document.getElementById("btnBackward"), "backward");
+    attachPressAndHold(document.getElementById("btnLeft"), "left");
+    attachPressAndHold(document.getElementById("btnRight"), "right");
+    // Stop is immediate; no auto-stop after stop
+    document.getElementById("btnStop").addEventListener("click", () => sendCommand("stop"));
+
+    // Keyboard controls
+    window.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
+      const k = e.key.toLowerCase();
+      if (k === "w") sendCommand("forward");
+      if (k === "s") sendCommand("backward");
+      if (k === "a") sendCommand("left");
+      if (k === "d") sendCommand("right");
+      if (k === " ") sendCommand("stop");
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const k = e.key.toLowerCase();
+      if (["w","a","s","d"].includes(k)) sendCommand("stop");
+    });
+
+    // Init UI
+    updateModePill();
+    log("Loaded. Demo mode is ready.");
+  </script>
+</body>
+</html>
+
